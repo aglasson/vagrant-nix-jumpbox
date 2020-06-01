@@ -1,0 +1,51 @@
+---
+- hosts: all
+  name: Ansible Runner Provision
+  become: yes
+
+  tasks:
+  - name: User Provision | User Account
+    user:
+      name: "{{ username }}"
+      shell: /bin/bash
+      state: present
+
+  - name: User Provision | Authorised Key
+    authorized_key: 
+      user: "{{ username }}"
+      key: '{{ item }}'
+      state: present
+      exclusive: yes
+    with_file:
+      - "/tmp/ssh_authorised.pub"
+
+  - name: User Provision | Disable password authentication
+    blockinfile:
+      path: /etc/ssh/sshd_config
+      marker: "# {mark} ANSIBLE | Disable password auth for user"
+      block: |
+        Match User "{{ username }}"
+        PasswordAuthentication no
+
+  - name: User Provision | Enable authorised key file
+    blockinfile:
+      path: /etc/ssh/sshd_config
+      marker: "# {mark} ANSIBLE | Enable SSH authorised key file auth"
+      block: |
+        AuthorizedKeysFile %h/.ssh/authorized_keys
+
+  - name: User Provision | Add to sudoers
+    copy:
+      dest: "/etc/sudoers.d/devops"
+      content: "{{ username }}  ALL=(ALL)  NOPASSWD: ALL"
+
+  - name: User Provision | Import private key from temp
+    copy:
+      remote_src: true
+      src: "/tmp/id_rsa"
+      dest: "/home/{{ username }}/.ssh/id_rsa"
+
+  - name: User Provision | Remove temp private key
+    file:
+      path: "/tmp/id_rsa"
+      state: absent
