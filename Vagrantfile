@@ -12,8 +12,9 @@ Vagrant.configure("2") do |config|
     config.vm.box_version = "1.0.282"
     config.vm.provision "file", source: ENV['USERPROFILE'] + "\\Documents\\Keys\\" + ENV['USERNAME'].downcase + "_private.ssh", destination: "/tmp/id_rsa"
     config.vm.provision "file", source: ENV['USERPROFILE'] + "\\Documents\\Keys\\" + ENV['USERNAME'].downcase + "_public.pub", destination: "/tmp/ssh_authorised.pub"
+    config.vm.synced_folder "./", "/vagrant"
     config.vm.provision "ansible_local" do |ansible|
-        ansible.playbook = "/vagrant/vagrant-utils/ansible-provisioning.yml"
+        ansible.playbook = "/vagrant/vagrant_utils/ansible-provisioning.yml"
         ansible.extra_vars = {
             username: ENV['USERNAME'].downcase
         }
