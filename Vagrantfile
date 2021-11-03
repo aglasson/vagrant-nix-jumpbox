@@ -16,7 +16,8 @@ Vagrant.configure("2") do |config|
     config.vm.provision "ansible_local" do |ansible|
         ansible.playbook = "/vagrant/vagrant_utils/ansible-provisioning.yml"
         ansible.extra_vars = {
-            username: ENV['USERNAME'].downcase
+            username: ENV['USERNAME'].downcase,
+            ansible_python_interpreter:"/usr/bin/python3"
         }
     end
     if ARGV[0] == "ssh"
